@@ -1,0 +1,247 @@
+###################################################################################################################################
+# This Conky configuration file was created by Matt Grotke (mgrotke@gmail.com) and is in the public domain.
+# ---------------------------------------------------------------------------------------------------------------------------------
+# TO RUN THIS CONKY CONFIG, YOU CAN TYPE THE FOLLOWING IN A TERMINAL:
+#     conky -c ~/.conky/mgconky/conf
+#
+# TO STOP CONKY, YOU CAN TYPE THE FOLLOWING IN A TERMINAL:
+#    killall conky
+#
+# TO HAVE THIS CONKY RUN EVERY TIME AT BOOT, GO INTO "STARTUP SOFTWARE" APP AND ADD THE FOLLOWING COMMAND WITH A DELAY OF 10 SECONDS:
+#     conky -p 10 -c /home/<username>/.conky/mgconky/conf
+#     NOTE:  It seems you must actually use the full path (/home/<username>) as the shortcut (~/) does not work.
+#
+# !!!IMPORTANT!!! THE FOLLOWING ARE REQUIREMENTS FOR THIS SCRIPT TO WORK PROPERLY:
+#     (1) Install software, if not already installed:
+#         "Conky"                 sudo apt-get install conky-all          (or use software manager)
+#         "Jq"                    sudo apt-get install jq                 (or use software manager)
+#         "Curl"                  sudo apt-get install curl               (or use software manager)
+#         "Wget"                  sudo apt-get install wget               (or use software manager)
+#         "lm-sensors"            sudo apt-get install lm-sensors         (or use software manager)
+#     (2) Install custom fonts:
+#         "Neuropolitical"        Place .ttf file in ~/.fonts/            https://www.dafont.com/font-comment.php?file=neuropolitical
+#         "StyleBats"             Place .ttf file in ~/.fonts/            https://www.dafont.com/search.php?q=StyleBats
+#     (3) Set the included bash script(s) as executable
+#         chmod +x ~/.conky/mgconky/weather/get_weather.sh
+#         chmod +x ~/.conky/mgconky/weather/parse_weather.sh
+#         chmod +x ~/.conky/mgconky/weather/parse_forecast.sh
+#     (4) Make a free account at https://openweathermap.org/
+#     (5) Write down your API key, which is found on the "API keys" tab after you log in.  (https://home.openweathermap.org/api_keys)
+#     (6) Find your city's location ID by entering your CITY NAME in the search box and select your city from the search results.
+#         Your location ID will be the number in the URL (for example:  https://openweathermap.org/city/5128581)
+#     (7) In this conf file below, set the following variables:
+#         "template6"             Set to your API key.
+#         "template7"             Set to your location ID.
+#         "template8"             Set to either "imperial" (for Fahrenheit) or "metric" (for Celsius).
+#     (8) Modify the drive names below with your device name(s), i.e. "/dev/sda", "/dev/sdb", "/dev/sdc", etc.
+#     (9) Modify the filesystems below with your mount name(s), i.e. "/" (root), "/mnt/MyData", "/media/<username>/MyUSBStick", etc.
+#    (10) Replace "enp34s0" below with name of your ethernet device. (Find name of ethernet device by typing "ip a" in terminal.)
+#    (11) If you use Wi-Fi instead of ethernet, change the Network section.  The following variables are available from Conky:
+#         ${wireless_ap <device>}                 Wireless access point MAC address
+#         ${wireless_bitrate <device>}            Wireless bitrate (ie 11 Mb/s)
+#         ${wireless_essid <device>}              Wireless access point ESSID
+#         ${wireless_link_bar <h>,<w> <device>}   Wireless link quality bar
+#         ${wireless_link_qual <device>}          Wireless link quality
+#         ${wireless_link_qual_max <device>}      Wireless link quality maximum value
+#         ${wireless_link_qual_perc <device>}     Wireless link quality in percents
+#         ${wireless_mode <device>}               Wireless mode (Managed/Ad-Hoc/Master)
+###################################################################################################################################
+
+#--------------------------
+# Window and drawing properties
+#--------------------------
+alignment top_right
+minimum_size 225
+maximum_width 225
+gap_x 15
+gap_y 15
+background no
+own_window yes
+own_window_transparent yes
+own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager
+own_window_type normal
+double_buffer yes
+draw_shades no
+draw_outline no
+draw_borders no
+draw_graph_borders yes
+no_buffers yes
+imlib_cache_size 0
+cpu_avg_samples 2
+update_interval 1.5
+total_run_times 0
+
+#--------------------------
+# Define fonts
+#--------------------------
+use_xft yes
+xftalpha 0.9
+#xftfont DejaVu Sans:size=8
+xftfont Courier:size=9
+override_utf8_locale yes # Force UTF8? Requires XFT (see above)... will displays degree symbol, instead of Â°, etc.
+short_units yes
+uppercase no
+
+#--------------------------
+# Define Colors
+#--------------------------
+default_color white
+default_shade_color black
+default_outline_color green
+color0 orange           # Titles
+color1 slategrey        # Horizonal lines
+color2 white            # Not used
+color3 lime             # Values
+color4 yellow           # Important
+color5 lime             # Bar graphs
+
+#--------------------------
+# Weather variables
+#--------------------------
+template6 "<ENTER YOUR API KEY HERE>"             # OpenWeatherMap API key (https://home.openweathermap.org/api_keys)
+template7 "<ENTER YOUR CITY ID HERE>"             # OpenWeatherMap City ID (the number in the URL of your city, for example:  https://openweathermap.org/city/5128581)
+template8 "imperial"                              # Temp unit ("default" for Kelvin, "metric" for Celcius, "imperial" for Fahrenheit)
+template9 ""                                      # Locale (e.g. "es_ES.UTF-8") # Leave empty for default
+
+#--------------------------
+# Load Lua script(s) -- If multiple files, separate each path with a space.  They should all be loaded on a single lua_load command.
+#--------------------------
+lua_load ~/.conky/mgconky/rounding.lua
+
+TEXT
+#--------------------------
+# Linux Mint Logo and Text
+#--------------------------
+${image ~/.conky/mgconky/mint_logo.png -s 35x35}${goto 50}${font Neuropolitical:pixelsize=12}${color0}${execi 100000 lsb_release -sd || cat /etc/*release}${color}${font}
+${goto 50}${font Neuropolitical:size=10}${nodename}${font}
+${voffset 8}Kernel: ${color3}${alignr}${sysname} ${kernel}${color}
+${voffset 2}Uptime: ${color3}${alignr}${uptime_short}${color}
+
+#--------------------------
+# Weather
+#--------------------------
+# ***** Download weather data and position icons *****
+${execi 300 ~/.conky/mgconky/weather/get_weather.sh ${template6} ${template7} ${template8} ${template9}}\
+${execi 300 cp -f ~/.conky/mgconky/weather/lime64/$(~/.conky/mgconky/weather/parse_weather.sh 'iconid').png ~/.cache/mgconky/weather0.png}${image ~/.cache/mgconky/weather0.png -p 40,140 -s 64x64}\
+${execi 300 cp -f ~/.conky/mgconky/weather/lime32/$(~/.conky/mgconky/weather/parse_forecast.sh 'first' '.weather[0].id' '1').png ~/.cache/mgconky/weather1.png}${image ~/.cache/mgconky/weather1.png -p 20,216 -s 32x32}\
+${execi 300 cp -f ~/.conky/mgconky/weather/lime32/$(~/.conky/mgconky/weather/parse_forecast.sh 'first' '.weather[0].id' '2').png ~/.cache/mgconky/weather2.png}${image ~/.cache/mgconky/weather2.png -p 96,216 -s 32x32}\
+${execi 300 cp -f ~/.conky/mgconky/weather/lime32/$(~/.conky/mgconky/weather/parse_forecast.sh 'first' '.weather[0].id' '3').png ~/.cache/mgconky/weather3.png}${image ~/.cache/mgconky/weather3.png -p 175,216 -s 32x32}
+# ***** Today's date *****
+${voffset -15}${color0}${alignc}${font Neuropolitical:size=10}${execi 300 ~/.conky/mgconky/weather/parse_weather.sh 'location'}${font}${color}
+${voffset -4}${color0}${alignc}${font Neuropolitical:size=10}${execi 300 LANG=${template9} LC_TIME=${template9} date +'%^a, %e %^B'}${font}${color}
+${voffset 4}${alignc}${color3}${execi 300 ~/.conky/mgconky/weather/parse_weather.sh 'description'}${color}
+# ***** Temperature right now *****
+${voffset 8}${alignc -40}${color3}${font Courier:size=20:bold}${execi 300 ~/.conky/mgconky/weather/parse_weather.sh 'temperature'}${if_match $template8 == "metric"}°C${else}${if_match $template8 == "imperial"}°F${else}${if_match $template8 == "default"}K${endif}${endif}${endif}${font}${color}
+# ***** Today's high/low temps *****
+${voffset 3}${alignc -40}${color3}${execi 300 ~/.conky/mgconky/weather/parse_forecast.sh 'min' '.main.temp_min' '0'}${color}\
+/${color3}${execi 300 ~/.conky/mgconky/weather/parse_forecast.sh 'max' '.main.temp_max' '0'}\
+${if_match $template8 == "metric"}°C${else}${if_match $template8 == "imperial"}°F${else}${if_match $template8 == "default"}K${endif}${endif}${endif}${color}
+# ***** Description of weather right now *****
+#${voffset 0}${alignc}${color3}${execi 300 ~/.conky/mgconky/weather/parse_weather.sh 'description'}${color}
+# ***** Forecast day labels (MON, TUES, WED, etc) *****
+${voffset 17}${color0}${font Neuropolitical:size=10}${alignc 77}${execi 300 LANG=${template9} LC_TIME=${template9} date -d +1day +%^a}${font}${color}
+${voffset -18}${color0}${font Neuropolitical:size=10}${alignc}${execi 300 LANG=${template9} LC_TIME=${template9} date -d +2day +%^a}${font}${color}
+${voffset -18}${color0}${font Neuropolitical:size=10}${alignc -77}${execi 300 LANG=${template9} LC_TIME=${template9} date -d +3day +%^a}${font}${color}
+# ***** Forecast high/low temps *****
+${voffset 32}${alignc 77}${color3}${execi 300 ~/.conky/mgconky/weather/parse_forecast.sh 'min' '.main.temp_min' '1'}${color}/${color3}${execi 300 ~/.conky/mgconky/weather/parse_forecast.sh 'max' '.main.temp_max' '1'}${if_match $template8 == "metric"}°C${else}${if_match $template8 == "imperial"}°F${else}${if_match $template8 == "default"}K${endif}${endif}${endif}${color}
+${voffset -13}${alignc}${color3}${execi 300 ~/.conky/mgconky/weather/parse_forecast.sh 'min' '.main.temp_min' '2'}${color}/${color3}${execi 300 ~/.conky/mgconky/weather/parse_forecast.sh 'max' '.main.temp_max' '2'}${if_match $template8 == "metric"}°C${else}${if_match $template8 == "imperial"}°F${else}${if_match $template8 == "default"}K${endif}${endif}${endif}${color}
+${voffset -13}${alignc -77}${color3}${execi 300 ~/.conky/mgconky/weather/parse_forecast.sh 'min' '.main.temp_min' '3'}${color}/${color3}${execi 300 ~/.conky/mgconky/weather/parse_forecast.sh 'max' '.main.temp_max' '3'}${if_match $template8 == "metric"}°C${else}${if_match $template8 == "imperial"}°F${else}${if_match $template8 == "default"}K${endif}${endif}${endif}${color}
+
+#--------------------------
+# Processor
+#--------------------------
+${color0}${font Neuropolitical:size=8:bold}PROCESSOR ${color1}${hr 2}${color}${font}
+${voffset 4}${color3}${font DejaVu Sans:size=8}${execi 100000 cat /proc/cpuinfo | grep 'model name' | cut -c 14-55 | uniq }${font}${color}
+${voffset 2}Temp: ${color4}${execi 10 sensors | grep "Tdie" | cut -c16-19 }°C${color}${alignr}Freq: ${color3}${freq}MHz${color}
+${voffset 0}${color5}${cpugraph 000000 00ffff}${color}
+${voffset -4}Core 1:${goto 60}${color5}${cpubar cpu1 6,140}${color}${alignr}${color3}${cpu cpu1}%${color}
+${voffset 0}Core 2:${goto 60}${color5}${cpubar cpu2 6,140}${color}${alignr}${color3}${cpu cpu2}%${color}
+${voffset 0}Core 3:${goto 60}${color5}${cpubar cpu3 6,140}${color}${alignr}${color3}${cpu cpu3}%${color}
+${voffset 0}Core 4:${goto 60}${color5}${cpubar cpu4 6,140}${color}${alignr}${color3}${cpu cpu4}%${color}
+${voffset 0}Core 5:${goto 60}${color5}${cpubar cpu5 6,140}${color}${alignr}${color3}${cpu cpu5}%${color}
+${voffset 0}Core 6:${goto 60}${color5}${cpubar cpu6 6,140}${color}${alignr}${color3}${cpu cpu6}%${color}
+
+#--------------------------
+# Graphics card
+#--------------------------
+${color0}${font Neuropolitical:size=8:bold}GRAPHICS CARD ${color1}${hr 2}${color}${font}
+${voffset 4}Temp: ${color4}${nvidia temp}°C${color}${alignr}Threshold: ${color3}${nvidia threshold}°C${color}
+
+#--------------------------
+# Memory
+#--------------------------
+${color0}${font Neuropolitical:size=8:bold}MEMORY ${color1}${hr 2}${color}${font}
+${voffset 4}RAM:${alignr}${color3}${lua MyRound ${mem} 1 halfup G hideUnit}${color} of ${color3}${lua MyRound ${memmax} 0 ceil G addSpace}B${color}
+${voffset -2}${color5}${membar}${color}
+${voffset 2}Swap:${alignr}${color3}${lua MyRound ${swap} 1 halfup G hideUnit}${color} of ${color3}${lua MyRound ${swapmax} 0 ceil G addSpace}B${color}
+${voffset -2}${color5}${swapbar}${color}
+
+#--------------------------
+# Drive #1
+#--------------------------
+${voffset 0}${color0}${font Neuropolitical:size=8:bold}DRIVE${font} /dev/nvme0n1${color} ${color1}${hr 2}${color}
+# ***** First we show the device *****
+${voffset 4}Read:${color} ${color3}${diskio_read nvme0n1}/s${color}${goto 120}Write: ${color3}${diskio_write nvme0n1}/s${color}
+${voffset -4}${color5}${diskiograph_read nvme0n1 25,110 000000 ff0000}${color}${alignr}${color5}${diskiograph_write nvme0n1 25,110 000000 00ffff}${color}
+# ***** Now we show the mounts under this device *****
+${voffset 0}/ (root):${alignr}${color3}${lua MyRound ${fs_used /} 0 halfup G hideUnit}${color} of ${color3}${lua MyRound ${fs_size /} 0 ceil G addSpace}B${color}
+${voffset -2}${color5}${fs_bar /}${color}
+${voffset 2}/home:${alignr}${color3}${lua MyRound ${fs_used /home} 0 halfup G hideUnit}${color} of ${color3}${lua MyRound ${fs_size /home} 0 ceil G addSpace}B${color}
+${voffset -2}${color5}${fs_bar /home}${color}
+
+#--------------------------
+# Drive #2
+#--------------------------
+${voffset 0}${color0}${font Neuropolitical:size=8:bold}DRIVE${font} /dev/sda${color} ${color1}${hr 2}${color}
+# ***** First we show the device *****
+${voffset 4}Read: ${color3}${diskio_read sda}/s${color}${goto 120}Write: ${color3}${diskio_write sda}/s${color}
+${voffset -4}${color5}${diskiograph_read sda 25,110 000000 ff0000}${color}${alignr}${color5}${diskiograph_write sda 25,110 000000 00ffff}${color}
+# ***** Now we show the mounts under this device *****
+${voffset 0}/mnt/SSD120:${alignr}${color3}${lua MyRound ${fs_used /mnt/SSD120} 0 halfup G hideUnit}${color} of ${color3}${lua MyRound ${fs_size /mnt/SSD120} 0 ceil G addSpace}B${color}
+${voffset -2}${color5}${fs_bar 6 /mnt/SSD120}${color}
+
+#--------------------------
+# Drive #3
+#--------------------------
+${voffset 0}${color0}${font Neuropolitical:size=8:bold}DRIVE${font} /dev/sdb${color} ${color1}${hr 2}${color}
+# ***** First we show the device *****
+${voffset 4}Read: ${color3}${diskio_read sdb}/s${color}${goto 120}Write: ${color3}${diskio_write sdb}/s${color}
+${voffset -4}${color5}${diskiograph_read sdb 25,110 000000 ff0000}${color}${alignr}${color5}${diskiograph_write sdb 25,110 000000 00ffff}${color}
+# ***** Now we show the mounts under this device *****
+${voffset 0}/mnt/SSD180:${alignr}${color3}${lua MyRound ${fs_used /mnt/SSD180} 0 halfup G hideUnit}${color} of ${color3}${lua MyRound ${fs_size /mnt/SSD180} 0 ceil G addSpace}B${color}
+${voffset -2}${color5}${fs_bar 6 /mnt/SSD180}${color}
+
+#----------------------
+# Top Processes
+#----------------------
+${voffset 0}${color0}${font Neuropolitical:size=8:bold}TOP PROCESSES ${color1}${hr 2}${color}${font}
+${voffset 6}By Memory Usage${goto 142}PID${alignr}RAM
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top_mem name 1}${goto 140}${top_mem pid 1}${alignr}${top_mem mem_res 1}${color}
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top_mem name 2}${goto 140}${top_mem pid 2}${alignr}${top_mem mem_res 2}${color}
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top_mem name 3}${goto 140}${top_mem pid 3}${alignr}${top_mem mem_res 3}${color}
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top_mem name 4}${goto 140}${top_mem pid 4}${alignr}${top_mem mem_res 4}${color}
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top_mem name 5}${goto 140}${top_mem pid 5}${alignr}${top_mem mem_res 5}${color}
+${voffset 6}By CPU Usage${goto 142}PID${alignr}CPU
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top name 1}${goto 140}${top pid 1}${alignr}${top cpu 1}%${color}
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top name 2}${goto 140}${top pid 2}${alignr}${top cpu 2}%${color}
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top name 3}${goto 140}${top pid 3}${alignr}${top cpu 3}%${color}
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top name 4}${goto 140}${top pid 4}${alignr}${top cpu 4}%${color}
+${voffset 0}${font StyleBats:size=10}h${font}${voffset -1}${color3}${offset 5}${top name 5}${goto 140}${top pid 5}${alignr}${top cpu 5}%${color}
+
+#--------------------
+# Network -- Replace "enp34s0" below with name of your ethernet device. (Find name of ethernet device by typing "ip a" in terminal.)
+#--------------------
+${voffset 0}${color0}${font Neuropolitical:size=8:bold}NETWORK ${color1}${hr 2}${color}${font}
+${voffset 6}Ethernet Device:${goto 140}${color3}${gw_iface}${color}
+${voffset 0}Internal IP:${goto 140}${color3}${addr enp34s0}${color}
+${voffset 0}External IP:${goto 140}${color3}${execi 1800 wget -q -O - checkip.dyndns.org | sed -e 's/[^[:digit:]\|.]//g'}${color}
+${voffset 6}DL: ${color3}${downspeed enp34s0}/s${color}${goto 140}UL:${color} ${color3}${upspeed enp34s0}/s${color}
+${voffset -2}${color5}${downspeedgraph enp34s0 25,90 000000 ff0000}${color}${alignr}${color5}${upspeedgraph enp34s0 25,90 000000 00ffff}${color}
+${voffset -6}Total: ${color3}${totaldown enp34s0}${color}${goto 140}Total:${color} ${color3}${totalup enp34s0}${color}
+
+#--------------------
+# Connections - netstat shows number of connections from your computer and application/PID making it. Kill spyware!
+#--------------------
+${voffset 0}${color0}${font Neuropolitical:size=8:bold}CONNECTIONS ${color1}${hr 2}${color}${font}
+${voffset 6}Num. connections / PID / Process
+${voffset 2}${color3}${execi 30 netstat -ept | grep ESTAB | awk '{print $9}' | cut -d: -f1 | sort | uniq -c | sort -nr}${color}
