@@ -1,7 +1,8 @@
 #!/bin/bash
 ###################################################################################################################################
-# This script was used from the Harmattan Conky theme project:  https://github.com/zagortenay333/Harmattan
-# Below is Harmattan's license for these files:
+# This script is from the "Harmattan Conky Theme" project: https://github.com/zagortenay333/Harmattan
+# The accompanying SVG files were also taken from Harmattan.
+# Below is Harmattan's original license for these files.
 # ---------------------------------------------------------------------------------------------------------------------------------
 # This project is available under 2 licenses -- choose whichever you prefer.
 # ---

@@ -1,7 +1,8 @@
 #!/bin/bash
 ###################################################################################################################################
-# This script was used from the Harmattan Conky theme project:  https://github.com/zagortenay333/Harmattan
-# Below is Harmattan's license for these files:
+# This script is from the "Harmattan Conky Theme" project: https://github.com/zagortenay333/Harmattan
+# It has been modified by Matt Grotke (mgrotke@gmail.com) for the "mgconky Conky Theme" project: https://github.com/mgrotke/mgconky
+# Below is Harmattan's original license for this file.
 # ---------------------------------------------------------------------------------------------------------------------------------
 # This project is available under 2 licenses -- choose whichever you prefer.
 # ---

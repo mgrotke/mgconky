@@ -1,5 +1,6 @@
 ###################################################################################################################################
-# This Conky configuration file was created by Matt Grotke (mgrotke@gmail.com) and is in the public domain.
+# This configuration file was created by Matt Grotke (mgrotke@gmail.com) for the "mgconky Conky Theme" project: https://github.com/mgrotke/mgconky
+# This file is in the public domain.
 # ---------------------------------------------------------------------------------------------------------------------------------
 # TO RUN THIS CONKY CONFIG, YOU CAN TYPE THE FOLLOWING IN A TERMINAL:
 #     conky -c ~/.conky/mgconky/conf

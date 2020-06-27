@@ -1,5 +1,6 @@
 --[[ ##############################################################################################################################
-# This lua file was created by Matt Grotke (mgrotke@gmail.com) and is in the public domain.
+# This script file was created by Matt Grotke (mgrotke@gmail.com) for the "mgconky Conky Theme" project: https://github.com/mgrotke/mgconky
+# This file is in the public domain.
 # ---------------------------------------------------------------------------------------------------------------------------------
 # The function below is intended to be called by a Conky config file in the following way:
 #     ${lua MyRound <value to round> <decimal places> <rounding type> <unit to use> <option>}
