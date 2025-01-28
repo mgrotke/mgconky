@@ -51,7 +51,7 @@ function conky_get_cpu_info()
     end
 end
 
--- ########################################################## GET GU MAKE AND MODEL ###########################################################
+-- ########################################################## GET GPU MAKE AND MODEL ##########################################################
 
 function conky_shorten_gpu_name(gpu_name)
     return (gpu_name
@@ -73,11 +73,15 @@ function conky_shorten_gpu_name(gpu_name)
         :gsub("Raspberry Pi Foundation", "Raspberry Pi")
         :gsub("Broadcom Inc%.", "Broadcom")
         :gsub("Lite Hash Rate", "LHR")
-        :gsub("GA%d+%s%[", "")                  -- Remove chip identifier like "GA106 ["
-        :gsub("%].*", "")                       -- Remove everything after "]"
-        :gsub("%(.*%)", "")                     -- Remove revision info like "(rev a1)"
-        :gsub("%s+", " ")                       -- Normalize spaces
-        :match("^%s*(.-)%s*$")                  -- Trim leading/trailing spaces
+        :gsub("Renoir", "")                      -- Remove "Renoir"
+        :gsub("Ryzen %d+/%d+ Mobile Series", "") -- Remove Ryzen details (for APUs)
+        :gsub("%(Ryzen.-%)", "")                 -- Remove Ryzen-related info in parentheses
+        :gsub("GA%d+%s%[", "")                   -- Remove chip identifier like "GA106 ["
+        :gsub("%[.*%]%s*", "")                   -- Remove chip code in brackets like "[1002:1636]"
+        :gsub("%((rev .-)%)", "")                -- Remove revision info like "(rev a1)"
+        :gsub("%s+", " ")                        -- Normalize spaces
+        :gsub("%]%s*$", "")                      -- Remove trailing square bracket "]" if it exists
+        :match("^%s*(.-)%s*$")                   -- Trim leading/trailing spaces
     )
 end
 
