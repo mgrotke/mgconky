@@ -19,7 +19,6 @@
 --         "Jq"                    sudo apt-get install jq                 (or use software manager)
 --         "Curl"                  sudo apt-get install curl               (or use software manager)
 --         "Wget"                  sudo apt-get install wget               (or use software manager)
---         "lm-sensors"            sudo apt-get install lm-sensors         (or use software manager)
 --     (2) FONTS.
 --         Install the following custom fonts:
 --         "Neuropolitical"        Place .ttf file in ~/.fonts/            https://www.dafont.com/font-comment.php?file=neuropolitical
@@ -122,10 +121,21 @@ ${voffset 8}Kernel: ${color3}${alignr}${sysname} ${kernel}${color}
 # ***** Up Time *****
 ${voffset 2}Uptime: ${color3}${alignr}${uptime_short}${color}
 # ***** Temperatures *****
-${voffset 2}CPU:${goto 50}${color4}${hwmon 0 temp 1}°C${color}${goto 100}${alignr}GPU:  ${color4}${nvidia temp}°C${color}
-#${voffset 2}CPU:${goto 50}${color4}${execi 10 sensors | grep "Tdie" | cut -c16-17}°C${color}${goto 100}${alignr}GPU:  ${color4}${nvidia temp}°C${color}
+${voffset 2}\
+CPU:  ${color4}${hwmon 0 temp 1}°C${color}${goto 100}${alignr}\
+GPU:  ${color4}${hwmon 1 temp 1}°C|${nvidia temp}°C${color}
+# -------------------- NOTE ABOUT TEMPERATURES --------------------
+# YOU WILL NEED TO FIDDLE WITH THE HWMON NUMBERS TO GET THE RIGHT
+# TEMP FOR YOUR PC. YOU CAN BROWSE THE /sys/class/hwmon/ DIRECTORY
+# TO SEE ALL THE OPTIONS.  THE TEMPS ARE IN MILLIDEGREES C IN
+# THE FILES CALLED temp1_input, temp3_input ETC.
+# NVIDIA CAN USE ${nvidia temp}.  THERE IS NO ALTERNATIVE FOR AMD.
+# INSTALL lm-sensors, amdgpu-monitor, or radeontop AND QUERY THE
+# TEMP THAT WAY.
+# -----------------------------------------------------------------
 # ***** CPU Make/Model *****
 ${voffset 6}${alignc}${color3}${lua_parse conky_get_cpu_info}
+# ***** GPU Make/Model *****
 ${voffset 0}${alignc}${color3}${lua_parse conky_get_gpu_info}
 
 #--------------------------

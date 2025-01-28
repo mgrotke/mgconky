@@ -1,0 +1,7 @@
+Hello, if you download this from Git, please ensure the folder is called mgconky and not mgconky-master.
+
+This should be the folder:
+
+~/.conky/mgconky/
+
+Thank you.
