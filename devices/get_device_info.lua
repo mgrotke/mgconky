@@ -151,7 +151,8 @@ function conky_get_drives_and_volumes()
         if dtype == "disk" then
             parent_drive = name
             devices[parent_drive] = { mountpoints = {} }
-        elseif dtype == "part" and parent_drive and mount and mount ~= "" then
+        elseif dtype == "part" and pkname == parent_drive and mount and mount ~= "" then
+            -- Only consider partitions with a non-empty mount point
             table.insert(devices[parent_drive].mountpoints, mount)
         elseif dtype == "dm" and pkname and mount and mount ~= "" then
             -- Associate device-mapper (dm) devices with their parent physical disk
