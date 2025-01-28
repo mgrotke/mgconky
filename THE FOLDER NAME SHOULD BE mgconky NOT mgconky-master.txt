@@ -4,4 +4,4 @@ This should be the folder:
 
 ~/.conky/mgconky/
 
-Thank you.
+Thank you!
