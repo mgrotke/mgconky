@@ -13,6 +13,7 @@ function conky_shorten_cpu_name(cpu_name)
         :gsub("CPU", "")          -- Remove "CPU"
         :gsub("Processor", "")    -- Remove "Processor"
         :gsub("@[%s%w%.]+", "")   -- Remove "@ XGHz"
+        :gsub("with.*", "")       -- Remove "with" and anything after the word "with"
         :gsub("%s%s+", " ")       -- Remove extra spaces
         :gsub("^%s+", "")         -- Trim leading spaces
         :gsub("%s+$", "")         -- Trim trailing spaces
