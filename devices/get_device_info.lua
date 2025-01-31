@@ -361,3 +361,64 @@ print("    CHECK SWAP STATUS = " .. conky_check_swap_status())
 print("    GET MEMORY USAGE = " .. conky_get_memory_usage("mem"))
 print("    GET SWAP USAGE = " .. conky_get_memory_usage("swap"))
 
+
+-- ####################################################### GET ACTIVE CONNECTIONS ##############################################################
+
+function conky_get_key_with_highest_value(t)
+    local max_key = nil
+    local max_value = -math.huge  -- Initialize with the smallest possible number
+
+    for key, value in pairs(t) do
+        if type(value) == "number" and value > max_value then
+            max_value = value
+            max_key = key
+        end
+    end
+
+    return max_key
+end
+
+function conky_get_connections()
+    local handle = io.popen("ss -eptH | grep ESTAB 2>/dev/null")
+    if not handle then return "Error: Unable to execute ss command" end
+
+    local process_names = {}
+    local process_counts = {}
+
+    -- Read each line of output
+    for line in handle:lines() do
+        -- Extract process name and PID using pattern matching
+        local pname, pid = line:match('users:%(%("([^"]+)",pid=(%d+)')
+        pid = tonumber(pid)  -- Ensure pid is a number
+        if pname and pid then
+            -- Store process name by PID and count occurrences
+            process_names[pid] = pname
+            process_counts[pid] = (process_counts[pid] or 0) + 1
+        end
+    end
+    handle:close()
+
+    -- Header line
+    local tab1_offset = "${goto 145}"
+    local line_prefix = "${voffset 0}${color}${font StyleBats:size=10}h${font Courier:size=9}${voffset -1}${color3}"
+    local result = string.format("${color}Process%sPID${alignr}Num \n", tab1_offset)
+
+    -- Sort and format output
+    while true do
+        local max_key = conky_get_key_with_highest_value(process_counts)
+
+        if max_key == nil then
+            break  -- Stop when the table is empty
+        end
+
+        result = result .. string.format("%s %s%s%d${alignr}%d \n", line_prefix, string.sub(process_names[max_key], 1, 16), tab1_offset, max_key, process_counts[max_key])
+
+        -- Remove the highest key from both tables
+        process_counts[max_key] = nil
+        process_names[max_key] = nil
+    end
+
+    return result
+end
+
+

@@ -234,7 +234,8 @@ ${voffset -6}Total: ${color3}${totaldown ${gw_iface}}${color}${goto 140}Total: $
 # Connections - netstat shows number of connections from your computer and application/PID making it. Kill spyware!
 #--------------------
 ${voffset 6}${color0}${font Neuropolitical:size=8:bold}CONNECTIONS ${color1}${hr 2}${color}${font Courier:size=9}
-${voffset 6}Num. connections / PID / Process
-${voffset 2}${color3}${execi 30 netstat -ept | grep ESTAB | awk '{print $9}' | cut -d: -f1 | sort | uniq -c | sort -nr}${color}
+#${voffset 6}Num. connections / PID / Process
+#${voffset 2}${color3}${execi 30 netstat -ept | grep ESTAB | awk '{print $9}' | cut -d: -f1 | sort | uniq -c | sort -nr}${color}
+${voffset 2}${lua_parse conky_get_connections}
 ]]
 
