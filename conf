@@ -15,10 +15,11 @@
 -- !!!IMPORTANT!!! THE FOLLOWING ARE REQUIREMENTS FOR THIS SCRIPT TO WORK PROPERLY:
 --     (1) DEPENDENCIES.
 --         Install the following software, if not already installed:
---         "Conky"                 sudo apt-get install conky-all          (or use software manager)
---         "Jq"                    sudo apt-get install jq                 (or use software manager)
---         "Curl"                  sudo apt-get install curl               (or use software manager)
---         "Wget"                  sudo apt-get install wget               (or use software manager)
+--         "Conky"                 sudo apt-get install conky-all
+--         "Jq"                    sudo apt-get install jq
+--         "Curl"                  sudo apt-get install curl
+--         "Wget"                  sudo apt-get install wget
+--         "python3"               sudo apt-get install python3
 --     (2) FONTS.
 --         Install the following custom fonts:
 --         "Neuropolitical"        Place .ttf file in ~/.fonts/            https://www.dafont.com/font-comment.php?file=neuropolitical
@@ -28,8 +29,8 @@
 --         chmod +x ~/.conky/mgconky/weather/get_weather.sh
 --         chmod +x ~/.conky/mgconky/weather/parse_weather.sh
 --         chmod +x ~/.conky/mgconky/weather/parse_forecast.sh
---         chmod +x ~/.conky/mgconky/weather/parse_forecast.sh
---         chmod +x ~/.conky/mgconky/stocks/get_stocks.py                  (Requires python3, which is usually pre-installed on your OS)
+--         chmod +x ~/.conky/mgconky/stocks/get_stocks_alphavantage.py
+--         chmod +x ~/.conky/mgconky/stocks/get_stocks_finnhub.py
 --     (4) WEATHER.
 --         Make a free account at https://openweathermap.org/
 --         Write down your API key, which is found on the "API keys" tab after you log in.  (https://home.openweathermap.org/api_key
@@ -91,16 +92,16 @@ conky.config = {
     color7 = "#FF0000", -- Bad values (red)
 
     -- Weather variables
-    template0 = "YOUR_OPENWEATHERMAP_API_KEY_HERE", -- OpenWeatherMap API key (https://home.openweathermap.org/api_keys)
-    template1 = "YOUR_OPENWEATHERMAP_CITY_ID_HERE", -- OpenWeatherMap City ID (the number in the URL of your city, for example:  https://openweathermap.org/city/5128581)
+    template0 = "<ENTER YOUR OPEANWEATHERMAP API KEY HERE>", -- OpenWeatherMap API key (https://home.openweathermap.org/api_keys)
+    template1 = "4467657", -- OpenWeatherMap City ID (the number in the URL of your city, for example:  https://openweathermap.org/city/5128581)
     template2 = "imperial", -- Temp unit ("default" for Kelvin, "metric" for Celsius, "imperial" for Fahrenheit)
     template3 = "", -- Locale (e.g., "es_ES.UTF-8") # Leave empty for default
 
     -- Stock variables
-    template4 = "YOUR_FINNHUB_API_KEY_HERE", -- FinnHub API key (https://finnhub.io/)
-    template5 = "YOUR_ALPHAVANTAGE_API_KEY_HERE", -- Alpha Vantage API key (https://www.alphavantage.co/)
-    template6 = "goog,amzn,aapl,msft,meta,tsla,avgo,tsm,brk.a,pg,nvda", -- Stock symbols for FinnHub (comma separated, no spaces, i.e. goog,amzn,aapl)
-    template7 = "nvda", -- Stock symbols for Alpha Vantage (keep to a minimum unless you have a paid API key)
+    template4 = "<ENTER YOUR FINNHUB API KEY HERE>", -- FinnHub API key (https://finnhub.io/)
+    template5 = "<ENTER YOUR ALPHAVANTAGE API KEY HERE", -- Alpha Vantage API key (https://www.alphavantage.co/)
+    template6 = "spy,dia,nvda,tsla,amzn,aapl,msft,meta,pg,ibit", -- Stock symbols for FinnHub (comma separated, no spaces, i.e. goog,amzn,aapl)
+    template7 = "tsla,spy,dia", -- Stock symbols for Alpha Vantage (keep to a minimum unless you have a paid API key)
 
     -- Load Lua script(s) -- If multiple files, separate each path with a space. They should all be loaded on a single lua_load command.
     -- lua_load = "~/.conky/mgconky/script1.lua ~/.conky/mgconky/script2.lua",
@@ -177,7 +178,7 @@ ${voffset -6}${execpi 60 $HOME/.conky/mgconky/stocks/get_stocks_finnhub.py --api
 ${endif}
 # ***** Alpha Vantage API *****
 ${if_match "${template5}" != "YOUR_ALPHAVANTAGE_API_KEY_HERE"}
-${voffset -12}${execpi 7200 $HOME/.conky/mgconky/stocks/get_stocks_alphavantage.py --api_key ${template5} --symbols ${template7} --range_in_days 30 --price_dec_places 0 --percent_dec_places 1}
+${voffset -12}${execpi 43200 $HOME/.conky/mgconky/stocks/get_stocks_alphavantage.py --api_key ${template5} --symbols ${template7} --range_in_days 30 --price_dec_places 0 --percent_dec_places 1}
 ${endif}
 #
 #--------------------------
@@ -234,7 +235,6 @@ ${voffset -6}Total: ${color3}${totaldown ${gw_iface}}${color}${goto 140}Total: $
 # Connections - netstat shows number of connections from your computer and application/PID making it. Kill spyware!
 #--------------------
 ${voffset 6}${color0}${font Neuropolitical:size=8:bold}CONNECTIONS ${color1}${hr 2}${color}${font Courier:size=9}
-#${voffset 6}Num. connections / PID / Process
 #${voffset 2}${color3}${execi 30 netstat -ept | grep ESTAB | awk '{print $9}' | cut -d: -f1 | sort | uniq -c | sort -nr}${color}
 ${voffset 2}${lua_parse conky_get_connections}
 ]]

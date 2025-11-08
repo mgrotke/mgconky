@@ -171,6 +171,12 @@ function conky_get_drives_and_volumes()
         if #data.mountpoints > 0 then
             output = output .. '${voffset 0}${color0}${font Neuropolitical:size=8:bold}DRIVE${font Courier:size=9} /dev/' .. drive .. '${color} ${color1}${hr 2}${color}\n'
             for _, mount in ipairs(data.mountpoints) do
+
+                -- Skip entries that are not real mountpoints like [SWAP]
+                if mount:sub(1, 1) ~= "/" then
+                    goto continue
+                end
+
                 -- Use df to get the size and used space for the mount
                 local handle = io.popen("df -h --output=target,size,used " .. mount .. " | tail -n 1")
                 local df_result = handle:read("*a")
@@ -182,6 +188,8 @@ function conky_get_drives_and_volumes()
                     output = output .. '${voffset 2}' .. target .. ': ${alignr}${color3}' .. used .. 'B${color} of ${color3}' .. size .. 'B${color}\n'
                     output = output .. '${voffset -2}${color5}${fs_bar ' .. target .. '}${color}\n'
                 end
+
+                ::continue::
             end
             output = output .. '\n' -- Add a blank line after the last mount point of the current drive
         end
