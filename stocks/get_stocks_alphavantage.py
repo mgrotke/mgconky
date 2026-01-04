@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 
+import os
+import sys
+import time
 import requests
 from datetime import datetime, timedelta
 import argparse
+
+CACHE_FILE = os.path.expanduser("~/.cache/mgconky/stocks_alphavantage.txt")
+API_DELAY_SECONDS = 15
+USE_CACHE = True
 
 def fetch_intraday_data(api_key, symbol, interval="1min"):
     """Fetch current and historical intraday price using TIME_SERIES_INTRADAY."""
@@ -99,6 +106,7 @@ def fetch_historical_data(api_key, symbol, range_in_days):
         print(f"Error: Failed to fetch historical data for {symbol} - {e}")
         return None
 
+
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Fetch stock data from Alpha Vantage.")
@@ -126,9 +134,15 @@ def main():
     line_tab3_offset = "${alignr}" # Could also replace this with goto 120 if you don't like the right alignment
 
     # Iterate symbols
-    for symbol in symbols:
+    had_success = False
+    for i, symbol in enumerate(symbols):
         fetched_data = fetch_intraday_data(args.api_key, symbol) if args.range_in_days < 1 else fetch_historical_data(args.api_key, symbol, args.range_in_days)
-        if fetched_data:
+        if (
+            isinstance(fetched_data, dict)
+            and "current_price" in fetched_data
+            and isinstance(fetched_data["current_price"], (int, float))
+        ):
+            had_success = True
             current_price = fetched_data["current_price"]
             compare_price = fetched_data["compare_price"]
             price_difference = current_price - compare_price
@@ -146,11 +160,81 @@ def main():
         else:
             output.append(f"{symbol}: Error fetching data")
 
+        # --- Rate limit protection for Alpha Vantage ---
+        if i < len(symbols) - 1:
+            time.sleep(API_DELAY_SECONDS) # wait 15 seconds between queries
+
     # Join all parts of the output and print it
     header_label = f"Intraday" if args.range_in_days < 1 else f"{args.range_in_days} Day"
     header_line = f"{line_tab1_offset}{color_header}Ticker{line_tab2_offset}Price ($$){line_tab3_offset}{header_label}{color_label}"
-    return header_line + "\n" + f"{line_tab1_offset}{color_header}${{voffset -5}}${{hr 1}}" + "\n" + "\n".join(output)
+    final_output = (
+        header_line
+        + "\n"
+        + f"{line_tab1_offset}{color_header}${{voffset -5}}${{hr 1}}"
+        + "\n"
+        + "\n".join(output)
+    )
+
+    if had_success:
+        if USE_CACHE:
+            # Save results to cache file
+            os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
+            tmp_file = CACHE_FILE + ".tmp"
+            with open(tmp_file, "w") as f:
+                f.write(final_output)
+            os.replace(tmp_file, CACHE_FILE)
+        else:
+            # Direct output mode (no cache)
+            return final_output
+    else:
+        # No valid data was returned
+        # Do NOT overwrite cache
+        # Do NOT return anything in cache mode
+        return None
+
 
 if __name__ == "__main__":
-    print(main())
+
+    # The free alpha vantage plan may require you to rate limit.
+    # Conky will not wait for rate limited output.
+    # We must instead return the previous results
+    # (from when this script was last called)
+    # Set RATE_LIMIT to false if you have the paid plan.
+    if USE_CACHE:
+
+        # Fork immediately so the process Conky launched can exit right away.
+        pid = os.fork()
+        if pid > 0:
+            # PARENT PROCESS (this is the process Conky launched)
+
+            # Return contents of cache file (from early query to Conky)
+            if os.path.exists(CACHE_FILE):
+                try:
+                    with open(CACHE_FILE, "r") as f:
+                        print(f.read(), end="")
+                    sys.stdout.flush()
+                except Exception:
+                    pass
+
+            # Parent exits immediately ---> Conky renders output
+            sys.exit(0)
+
+        else:
+            # CHILD PROCESS (background updater, not waited on by Conky)
+
+            # Detach from the parent session so Conky does not wait on this process
+            os.setsid()
+
+            # Perform new query
+            main()
+            sys.exit(0)
+
+    else:
+
+        # Return the results to Conky
+        result = main()
+        if result is not None:
+            print(result)
+
+
 
