@@ -177,6 +177,17 @@ function conky_get_drives_and_volumes()
                     goto continue
                 end
 
+                -- Skip common temporary mounts
+                if mount:match("^/sys/") then goto continue end
+                if mount:match("^/proc/") then goto continue end
+                if mount:match("^/dev/") then goto continue end
+
+                -- Skip mounts under /var/, but allow a mount at /var itself
+                if mount ~= "/var" and mount:match("^/var/") then goto continue end
+
+                -- Skip runtime mounts except removable media
+                if mount:match("^/run/") and not mount:match("^/run/media/") then goto continue end
+
                 -- Use df to get the size and used space for the mount
                 local handle = io.popen("df -h --output=target,size,used " .. mount .. " | tail -n 1")
                 local df_result = handle:read("*a")
@@ -184,6 +195,13 @@ function conky_get_drives_and_volumes()
 
                 -- Parse df output
                 local target, size, used = df_result:match("(%S+)%s+(%S+)%s+(%S+)")
+
+                -- Ensure mount still exists before emitting fs_bar
+                local test = io.open(target, "r")
+                if not test then goto continue end
+                test:close()
+
+                -- Create output lines for this mountpoint.
                 if target and size and used then
                     output = output .. '${voffset 2}' .. target .. ': ${alignr}${color3}' .. used .. 'B${color} of ${color3}' .. size .. 'B${color}\n'
                     output = output .. '${voffset -2}${color5}${fs_bar ' .. target .. '}${color}\n'
