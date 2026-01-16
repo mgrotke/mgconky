@@ -30,6 +30,7 @@
 --         chmod +x ~/.conky/mgconky/weather/parse_weather.sh
 --         chmod +x ~/.conky/mgconky/weather/parse_forecast.sh
 --         chmod +x ~/.conky/mgconky/stocks/get_stocks_alphavantage.py
+--         chmod +x ~/.conky/mgconky/stocks/process_stocks_alphavantage.py
 --         chmod +x ~/.conky/mgconky/stocks/get_stocks_finnhub.py
 --     (4) WEATHER.
 --         Make a free account at https://openweathermap.org/
@@ -178,7 +179,8 @@ ${voffset -6}${execpi 60 $HOME/.conky/mgconky/stocks/get_stocks_finnhub.py --api
 ${endif}
 # ***** Alpha Vantage API *****
 ${if_match "${template5}" != "YOUR_ALPHAVANTAGE_API_KEY_HERE"}
-${voffset -12}${execpi 43200 $HOME/.conky/mgconky/stocks/get_stocks_alphavantage.py --api_key ${template5} --symbols ${template7} --range_in_days 30 --price_dec_places 0 --percent_dec_places 1}
+${execpi 43200 $HOME/.conky/mgconky/stocks/get_stocks_alphavantage.py --api_key ${template5} --symbols ${template7} --range_in_days 30}
+${voffset -12}${execpi 60 $HOME/.conky/mgconky/stocks/process_stocks_alphavantage.py --symbols ${template7} --range_in_days 30 --price_dec_places 0 --percent_dec_places 1 --stale_seconds 43200}
 ${endif}
 #
 #--------------------------
