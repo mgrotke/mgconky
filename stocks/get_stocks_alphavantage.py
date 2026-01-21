@@ -18,6 +18,12 @@ API_DELAY_SECONDS = 1
 NO_THRASH_SECONDS = 60 * 60  # 1 hour
 
 
+def log_error(message):
+    """Print timestamped error message to stderr and flush immediately."""
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{ts}] {message}", file=sys.stderr, flush=True)
+
+
 def fetch_intraday_data(api_key, symbol, interval="1min"):
     # Query AlphaVantage intraday endpoint for the given symbol
     url = "https://www.alphavantage.co/query"
@@ -45,13 +51,13 @@ def fetch_intraday_data(api_key, symbol, interval="1min"):
                 }
             else:
                 # API responded but did not include expected time series data
-                print(f"Error: No 'Time Series ({interval})' data found for {symbol}.", file=sys.stderr)
+                log_error(f"No 'Time Series ({interval})' data found for {symbol}.")
         else:
             # HTTP error from AlphaVantage
-            print(f"Error: Failed to fetch intraday data for {symbol} (HTTP {response.status_code})", file=sys.stderr)
+            log_error(f"Failed to fetch intraday data for {symbol} (HTTP {response.status_code})")
     except requests.RequestException as e:
         # Network or request failure
-        print(f"Error: Failed to fetch intraday data for {symbol} - {e}", file=sys.stderr)
+        log_error(f"Failed to fetch intraday data for {symbol} - {e}")
 
     return None
 
@@ -92,13 +98,14 @@ def fetch_historical_data(api_key, symbol, range_in_days):
                 }
             else:
                 # API responded but did not include expected daily series data
-                print(f"Error: No 'Time Series (Daily)' data found for {symbol}.", file=sys.stderr)
+                log_error(f"No 'Time Series (Daily)' data found for {symbol}.")
         else:
             # HTTP error from AlphaVantage
-            print(f"Error: Failed to fetch historical data for {symbol} (HTTP {response.status_code})", file=sys.stderr)
+            log_error(f"Failed to fetch historical data for {symbol} (HTTP {response.status_code})")
+
     except requests.RequestException as e:
         # Network or request failure
-        print(f"Error: Failed to fetch historical data for {symbol} - {e}", file=sys.stderr)
+        log_error(f"Failed to fetch historical data for {symbol} - {e}")
 
     return None
 
